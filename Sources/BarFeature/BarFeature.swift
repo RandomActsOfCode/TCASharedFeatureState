@@ -15,16 +15,15 @@ public struct BarFeature: ReducerProtocol {
     // MARK: Lifecycle
 
     public init(
-      temperature: Int? = nil,
       bazz: BazzFeature.State = .init()
     ) {
-      self.temperature = temperature
+      self.temperature = .notSynchronized
       self.bazz = bazz
     }
 
     // MARK: Public
 
-    public var temperature: Int?
+    public var temperature: SharedState<Int>
     public var bazz: BazzFeature.State
   }
 
@@ -58,7 +57,7 @@ public struct BarFeature: ReducerProtocol {
       }
 
     case let .temperatureUpdated(temperature):
-      state.temperature = temperature
+      state.temperature = .value(temperature)
       return .none
 
     case .bazz:
@@ -69,7 +68,7 @@ public struct BarFeature: ReducerProtocol {
 
 extension BarFeature.State {
   var temperatureString: String {
-    guard let temperature else {
+    guard let temperature = temperature.value else {
       return "No Value"
     }
 

@@ -13,13 +13,13 @@ public struct BazzFeature: ReducerProtocol {
   public struct State: Equatable {
     // MARK: Lifecycle
 
-    public init(temperature: Int? = nil) {
-      self.temperature = temperature
+    public init() {
+      self.temperature = .notSynchronized
     }
 
     // MARK: Public
 
-    public var temperature: Int?
+    public var temperature: SharedState<Int>
   }
 
   public enum Action: Sendable {
@@ -46,7 +46,7 @@ public struct BazzFeature: ReducerProtocol {
       }
 
     case let .temperatureUpdated(temperature):
-      state.temperature = temperature
+      state.temperature = .value(temperature)
       return .none
     }
   }
@@ -54,7 +54,7 @@ public struct BazzFeature: ReducerProtocol {
 
 extension BazzFeature.State {
   var temperatureString: String {
-    guard let temperature else {
+    guard let temperature = temperature.value else {
       return "No Value"
     }
 

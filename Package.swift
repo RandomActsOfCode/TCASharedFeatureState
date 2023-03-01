@@ -23,6 +23,10 @@ let package = Package(
       targets: ["BazzFeature"]
     ),
     .library(
+      name: "AppSharedStateClient",
+      targets: ["AppSharedStateClient"]
+    ),
+    .library(
       name: "SharedFeatureStateClient",
       targets: ["SharedFeatureStateClient"]
     ),
@@ -35,12 +39,23 @@ let package = Package(
     .target(
       name: "AppFeature",
       dependencies: [
+        "AppSharedStateClient",
         "SharedFeatureStateClient",
         "FooFeature",
         .product(
           name: "ComposableArchitecture",
           package: "swift-composable-architecture"
         ),
+        .product(
+          name: "Dependencies",
+          package: "swift-dependencies"
+        ),
+      ]
+    ),
+    .target(
+      name: "AppSharedStateClient",
+      dependencies: [
+        "SharedFeatureStateClient",
         .product(
           name: "Dependencies",
           package: "swift-dependencies"
@@ -64,6 +79,7 @@ let package = Package(
     .target(
       name: "BarFeature",
       dependencies: [
+        "AppSharedStateClient",
         "BazzFeature",
         "SharedFeatureStateClient",
         .product(
@@ -79,6 +95,7 @@ let package = Package(
     .target(
       name: "BazzFeature",
       dependencies: [
+        "AppSharedStateClient",
         "SharedFeatureStateClient",
         .product(
           name: "ComposableArchitecture",

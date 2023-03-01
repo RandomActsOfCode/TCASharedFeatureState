@@ -1,5 +1,5 @@
+import AppSharedStateClient
 import ComposableArchitecture
-import SharedFeatureStateClient
 
 // MARK: - BazzFeature
 
@@ -14,21 +14,21 @@ public struct BazzFeature: ReducerProtocol {
     // MARK: Lifecycle
 
     public init() {
-      self.temperature = .notSynchronized
+      self.temperature = nil
     }
 
     // MARK: Public
 
-    public var temperature: SharedState<Int>
+    public var temperature: Int?
   }
 
   public enum Action: Sendable {
     case task
-    case temperatureUpdated(Int)
+    case temperatureUpdated(Int?)
   }
 
-  @Dependency(\.sharedStateReadonlyClient)
-  public var sharedStateReadonlyClient
+  @Dependency(\.readOnlySharedStateClient.temperature)
+  public var temperatureSharedStateClient
 
   public var body: some ReducerProtocol<State, Action> {
     Reduce(core)
@@ -40,13 +40,13 @@ public struct BazzFeature: ReducerProtocol {
     switch action {
     case .task:
       return .run { send in
-        for await newValue in await sharedStateReadonlyClient.observe() {
+        for await newValue in temperatureSharedStateClient.observe() {
           await send(.temperatureUpdated(newValue))
         }
       }
 
     case let .temperatureUpdated(temperature):
-      state.temperature = .value(temperature)
+      state.temperature = temperature
       return .none
     }
   }
@@ -54,7 +54,7 @@ public struct BazzFeature: ReducerProtocol {
 
 extension BazzFeature.State {
   var temperatureString: String {
-    guard let temperature = temperature.value else {
+    guard let temperature else {
       return "No Value"
     }
 

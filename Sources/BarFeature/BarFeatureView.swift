@@ -18,6 +18,7 @@ public struct BarFeatureView: View {
         titleText
         Spacer()
         temperatureText
+        greetingText
         Spacer()
         bazzView
         Spacer()
@@ -39,6 +40,13 @@ public struct BarFeatureView: View {
   private var temperatureText: some View {
     WithViewStore(store, observe: \.temperatureString) { viewStore in
       Text("Temperature: \(viewStore.state)")
+        .padding()
+    }
+  }
+
+  private var greetingText: some View {
+    WithViewStore(store, observe: \.greetingString) { viewStore in
+      Text("Greeting: \(viewStore.state)")
         .padding()
     }
   }

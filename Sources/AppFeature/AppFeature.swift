@@ -1,3 +1,4 @@
+import AppSharedStateClient
 import ComposableArchitecture
 import FooFeature
 
@@ -15,21 +16,25 @@ public struct AppFeature: ReducerProtocol {
 
     public init(
       temperature: Int? = nil,
+      greeting: String? = nil,
       foo: FooFeature.State? = nil
     ) {
       self.temperature = temperature
+      self.greeting = greeting
       self.foo = foo
     }
 
     // MARK: Public
 
     public var temperature: Int?
+    public var greeting: String?
     public var foo: FooFeature.State?
   }
 
   public enum Action: Sendable {
     case task
     case temperatureUpdated(Int)
+    case greetingUpdated(String)
     case gotoChildButtonPressed
     case fooFeatureSheetDismissed
     case foo(action: FooFeature.Action)
@@ -44,8 +49,10 @@ public struct AppFeature: ReducerProtocol {
 
   // MARK: Internal
 
-  @Dependency(\.sharedStateWriteOnlyClient)
-  var sharedStateWriteOnlyClient
+  @Dependency(\.writeOnlySharedStateClient.temperature)
+  var temperatureSharedStateClient
+  @Dependency(\.writeOnlySharedStateClient.greeting)
+  var greetingSharedStateClient
   @Dependency(\.continuousClock)
   var clock
 
@@ -54,16 +61,31 @@ public struct AppFeature: ReducerProtocol {
   private func core(into state: inout State, action: Action) -> EffectTask<Action> {
     switch action {
     case .task:
-      return .run { send in
-        for await _ in clock.timer(interval: .milliseconds(5000)) {
+      let first: EffectTask<Action> = .run { send in
+        for await _ in clock.timer(interval: .milliseconds(3000)) {
           await send(.temperatureUpdated(Int.random(in: -1 ..< 40)))
         }
       }
 
+      let second: EffectTask<Action> = .run { send in
+        let greetings = ["Hello", "Bonjour", "Hola", "Nǐ Hǎo"]
+        for await _ in clock.timer(interval: .milliseconds(2000)) {
+          await send(.greetingUpdated(greetings[Int.random(in: greetings.indices)]))
+        }
+      }
+
+      return .merge(first, second)
+
     case let .temperatureUpdated(temperature):
       state.temperature = temperature
       return .run { _ in
-        await sharedStateWriteOnlyClient.write(temperature)
+        await temperatureSharedStateClient.write(temperature)
+      }
+
+    case let .greetingUpdated(greeting):
+      state.greeting = greeting
+      return .run { _ in
+        await greetingSharedStateClient.write(greeting)
       }
 
     case .gotoChildButtonPressed:

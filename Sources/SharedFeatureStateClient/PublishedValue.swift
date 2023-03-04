@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - PublishedValue
 
-public enum PublishedValue<Value> {
+public enum PublishedValue<Value>: Sendable where Value: Sendable {
   case notPublished
   case published(Value)
 }

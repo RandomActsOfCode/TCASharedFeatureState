@@ -120,5 +120,11 @@ let package = Package(
         ),
       ]
     ),
+    .testTarget(
+      name: "SharedFeatureStateClientTests",
+      dependencies: [
+        "SharedFeatureStateClient",
+      ]
+    ),
   ]
 )

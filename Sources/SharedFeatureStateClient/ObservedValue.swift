@@ -20,14 +20,3 @@ extension ObservedValue {
     return value
   }
 }
-
-extension ObservedValue {
-  public init(_ publishedValue: PublishedValue<Value>) {
-    switch publishedValue {
-    case .notPublished:
-      self = .notObserved
-    case let .published(value):
-      self = .observed(value)
-    }
-  }
-}

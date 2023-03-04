@@ -27,8 +27,8 @@ public struct BazzFeature: ReducerProtocol {
     case temperatureUpdated(Int?)
   }
 
-  @Dependency(\.readOnlySharedStateClient.temperature)
-  public var temperatureSharedStateClient
+  @SharedStateObserver(\AppSharedState.temperature)
+  public var temperatureClient
 
   public var body: some ReducerProtocol<State, Action> {
     Reduce(core)
@@ -40,7 +40,7 @@ public struct BazzFeature: ReducerProtocol {
     switch action {
     case .task:
       return .run { send in
-        for await newValue in temperatureSharedStateClient.observe() {
+        for await newValue in temperatureClient.observe() {
           await send(.temperatureUpdated(newValue))
         }
       }

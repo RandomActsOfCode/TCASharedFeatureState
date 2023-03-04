@@ -49,10 +49,10 @@ public struct AppFeature: ReducerProtocol {
 
   // MARK: Internal
 
-  @Dependency(\.writeOnlySharedStateClient.temperature)
-  var temperatureSharedStateClient
-  @Dependency(\.writeOnlySharedStateClient.greeting)
-  var greetingSharedStateClient
+  @SharedStatePublisher(\AppSharedState.temperature)
+  var temperatureClient
+  @SharedStatePublisher(\AppSharedState.greeting)
+  var greetingClient
   @Dependency(\.continuousClock)
   var clock
 
@@ -79,13 +79,13 @@ public struct AppFeature: ReducerProtocol {
     case let .temperatureUpdated(temperature):
       state.temperature = temperature
       return .run { _ in
-        await temperatureSharedStateClient.write(temperature)
+        await temperatureClient.write(newValue: temperature)
       }
 
     case let .greetingUpdated(greeting):
       state.greeting = greeting
       return .run { _ in
-        await greetingSharedStateClient.write(greeting)
+        await greetingClient.write(newValue: greeting)
       }
 
     case .gotoChildButtonPressed:

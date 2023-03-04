@@ -24,22 +24,22 @@ public struct BarFeature: ReducerProtocol {
 
     // MARK: Public
 
-    public var temperature: ObservedValue<Int?>
-    public var greeting: ObservedValue<String?>
+    public var temperature: ObservedValue<Int>
+    public var greeting: ObservedValue<String>
     public var bazz: BazzFeature.State
   }
 
   public enum Action: Sendable {
     case task
-    case greetingUpdated(String?)
-    case temperatureUpdated(Int?)
+    case greetingUpdated(String)
+    case temperatureUpdated(Int)
     case bazz(action: BazzFeature.Action)
   }
 
-  @Dependency(\.readOnlySharedStateClient.temperature)
-  public var temperatureSharedStateClient
-  @Dependency(\.readOnlySharedStateClient.greeting)
-  public var greetingSharedStateClient
+  @SharedStateObserver(\AppSharedState.temperature)
+  public var temperatureClient
+  @SharedStateObserver(\AppSharedState.greeting)
+  public var greetingClient
 
   public var body: some ReducerProtocol<State, Action> {
     Reduce(core)
@@ -54,13 +54,13 @@ public struct BarFeature: ReducerProtocol {
     switch action {
     case .task:
       let first: EffectTask<Action> = .run { send in
-        for await newValue in temperatureSharedStateClient.observe() {
+        for await newValue in temperatureClient.observe() {
           await send(.temperatureUpdated(newValue))
         }
       }
 
       let second: EffectTask<Action> = .run { send in
-        for await newValue in greetingSharedStateClient.observe() {
+        for await newValue in greetingClient.observe() {
           await send(.greetingUpdated(newValue))
         }
       }
@@ -83,20 +83,20 @@ public struct BarFeature: ReducerProtocol {
 
 extension BarFeature.State {
   var temperatureString: String {
-    guard let temperature = temperature.value, let x = temperature else {
+    guard let value = temperature.value else {
       return "No Value"
     }
 
-    return String(x)
+    return String(value)
   }
 }
 
 extension BarFeature.State {
   var greetingString: String {
-    guard let greeting = greeting.value, let x = greeting else {
+    guard let value = greeting.value else {
       return "No Value"
     }
 
-    return String(x)
+    return String(value)
   }
 }
